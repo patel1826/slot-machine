@@ -53,7 +53,7 @@
                     timerHandler.postDelayed(this,(60*(milisec/500)));
                 }
                 else{
-                    timerHandler.postDelayed(this,25);
+                    timerHandler.postDelayed(this,25);//hi
                 }
             }
         };
