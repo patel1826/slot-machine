@@ -6,6 +6,7 @@
      long startTime =0;
           Runnable s1Runnable = new Runnable() {
             @Override
+ //HELOOOOOOO JILLLLLLLL
             public void run() {
                 //displays images in short->longer time intervals in image view (looks like spinning)
                 ImageView slot1 = findViewById(R.id.slot1);
