@@ -1,84 +1,84 @@
-# slot-machine
- private ArrayList<Integer> slotImg = new ArrayList<Integer>();
-    private ArrayList<Integer> s1 = new ArrayList<Integer>();
-    private ArrayList<Integer> s2 = new ArrayList<Integer>();
-    private ArrayList<Integer> s3 = new ArrayList<Integer>();
-    private int bet =0;
-    private int coin =100;
-    private Integer[] dispNum = new Integer[3];//dispNum will hold the final #'s after slot machine runs
-     Handler timerHandler = new Handler();
-     //sends runnables to a queue and executes them (each runnable creates a spinning slot)
-     long startTime =0;
-          Runnable s1Runnable = new Runnable() {
-            @Override
-            public void run() {
-                //displays images in short->longer time intervals in image view (looks like spinning)
-                ImageView slot1 = findViewById(R.id.slot1);
-                dispNum[0]=s1.get((int) (Math.random() * s1.size()));
-                slot1.setImageResource(slotImg.get(dispNum[0]));//displays random image
-                int milisec = (int)((System.currentTimeMillis()-startTime));
-                //amt of time passed btwn spinning start-now ^
-                if (milisec>=500){//after certain amt of time spinning stops
-                    timerHandler.removeCallbacks(this);
-                }
-                else if(((System.currentTimeMillis()-startTime))>=100){
-                    //as time passes, the delay btwn runnable calls increases
-                    timerHandler.postDelayed(this,(25*(milisec/100)));
-                }
-                else{
-                    timerHandler.postDelayed(this,25);
-                    //adds runnable to queue again, to show series of imgs quickly
-                }
-            }
-        };
-        Runnable s2Runnable = new Runnable() {
-            @Override
-            public void run() {
-                ImageView slot2 = findViewById(R.id.slot2);
-                dispNum[1]=s2.get((int) (Math.random() * s2.size()));
-                slot2.setImageResource(slotImg.get(dispNum[1]));
-                int milisec = (int)((System.currentTimeMillis()-startTime));
-                if (milisec>=1500){
-                    timerHandler.removeCallbacks(this);
-                }
-                else if(((System.currentTimeMillis()-startTime))>=250){
-                    timerHandler.postDelayed(this,(40*(milisec/250)));
-                }
-                else{
-                    timerHandler.postDelayed(this,25);
-                }
-            }
-        };
-        Runnable s3Runnable = new Runnable() {
-            @Override
-            public void run() {
-                ImageView slot3 = findViewById(R.id.slot3);
-                dispNum[2]=s3.get((int) (Math.random() * s3.size()));
-                slot3.setImageResource(slotImg.get(dispNum[2]));
-                int milisec = (int)((System.currentTimeMillis()-startTime));
-                if (milisec>=2000){
-                    checkWinning();//checks to see if player won anything
-                    timerHandler.removeCallbacks(this);
-                }
-                else if(((System.currentTimeMillis()-startTime))>=500){
-                    timerHandler.postDelayed(this,(60*(milisec/500)));
-                }
-                else{
-                    timerHandler.postDelayed(this,25);
-                }
-            }
-        };
-
+//MainActivity
+public class MainActivity extends AppCompatActivity {
+    public static final String EXTRA_NUM="com.example.michellezhang.slotmachineminigame.EXTRA_INT";
+    private Button btn1;
+    private int numClick;
+    private TextView coins;
+    private int numCoin=0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        final Button spin = findViewById(R.id.spinBtn);
-        final Button addCoin = findViewById(R.id.addCoin);
-        for (int i=0;i<6;i++){//fills possible outcomes of spin to array (0-6)
-            s1.add(i);
-            s2.add(i);
-            s3.add(i);
+
+        coins=(TextView)findViewById(R.id.textView);
+        numClick=0;
+        btn1 = (Button) findViewById(R.id.button1);
+        btn1.setOnClickListener(new View.OnClickListener(){
+
+            @Override
+            public void onClick(View v) {
+                numClick++;
+                //minigame will pop up evey other click
+                if(numClick%2==0){
+                    //this calls the method that will open up anther activity
+                    openActivity();
+                }
+            }
+        });
+        Intent intent2=getIntent();
+        int num=intent2.getIntExtra(Main2Activity.EXTRA_INT, 0);
+
+        numCoin=num;
+        coins.setText(num+"");
+        Toast.makeText(this, num + "", Toast.LENGTH_SHORT).show();
+
+    }
+    public void openActivity(){
+        //opens up a second activity
+        Intent intent=new Intent(this, Main2Activity.class);
+        //allows the other activity to access the number of coins the player has
+        intent.putExtra(EXTRA_NUM, numCoin);
+        //launches the second activity
+        startActivity(intent);
+    }
+
+}
+//Main2Activity
+
+public class Main2Activity extends AppCompatActivity {
+    public static final String EXTRA_INT="com.example.michellezhang.slotmachineminigame.EXTRA_INT";
+    private Button spin;
+    private ArrayList<Integer> slotNum=new ArrayList<>();
+    //displays win or lose
+    private TextView showSpin;
+    //takes players guess
+    private EditText input;
+    //number the slot lands on
+    private int spinResult;
+    //how many coins the player earns
+    private int prize=0;
+    //how many coins the player has going into the minigame
+    private int startCoins=0;
+    private ArrayList<Integer> slotImg = new ArrayList<Integer>();
+    private ImageView slot1;
+    private int counter=0;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main2);
+
+        //accesses the number of coins the player has, gets data from the main activity
+        Intent intent2=getIntent();
+        startCoins=intent2.getIntExtra(MainActivity.EXTRA_NUM, 0);
+        prize=startCoins;
+
+        showSpin=(TextView)findViewById(R.id.textView2);
+        slot1 = findViewById(R.id.singleSlot);
+        input=(EditText)findViewById(R.id.enterGuess);
+
+        for(int i=0; i<7; i++){
+            slotNum.add(i);
         }
         slotImg.add(R.drawable.zero);
         slotImg.add(R.drawable.one);
@@ -86,55 +86,61 @@
         slotImg.add(R.drawable.three);
         slotImg.add(R.drawable.four);
         slotImg.add(R.drawable.five);
-       // slotImg.add(R.drawable.six);
-        spin.setOnClickListener(new View.OnClickListener() {
+        slotImg.add(R.drawable.six);
+
+        spin=(Button)findViewById(R.id.btn2);
+        spin.setOnClickListener(new View.OnClickListener(){
+
             @Override
-            public void onClick(View v) {//displays random images in imgviews(slots) to make it seem like its spinning
-                startTime = System.currentTimeMillis();
-                timerHandler.postDelayed(s1Runnable,0);//tells handlers to add runnables to queue and run them
-                timerHandler.postDelayed(s2Runnable,0);
-                timerHandler.postDelayed(s3Runnable,0);
-//                Toast.makeText(getBaseContext(),"hiii",Toast.LENGTH_LONG).show();
+            public void onClick(View v) {
+
+                new CountDownTimer(5000,100){
+                    @Override
+                    public void onTick(long millisUntilFinished) {
+                        counter++;
+                        if(counter<=15) {
+                            //shows random images
+                            spinResult = slotNum.get((int) (Math.random() * slotNum.size()));
+                            slot1.setImageResource(slotImg.get(spinResult));
+
+                        }
+                        else if (counter == 16) {
+                            //adds coins to the player's original amount if they win
+                            if (spinResult == Integer.parseInt(input.getText().toString())) {
+                                prize = startCoins + 50;
+                            }
+
+                        }
+                        else if (counter > 16) {
+                            //displays win or lose
+                            if (spinResult == Integer.parseInt(input.getText().toString())) {
+                                showSpin.setText("You \n Win!");
+                                if(counter%8==0){
+                                    showSpin.setText("");
+                                }
+
+                            }
+                            else {
+                                showSpin.setText("You \n Lose");
+                                if(counter%8==0){
+                                    showSpin.setText("");
+                                }
+                            }
+                        }
+
+                    }
+                    @Override
+                    public void onFinish() {
+                    //returns to the main activity and passes through the amound of coins the player has after playing the minigame
+                        Intent intent =new Intent(Main2Activity.this, MainActivity.class);
+                        intent.putExtra(EXTRA_INT, prize);
+                        startActivity(intent);
+
+                    }
+
+                }.start();
 
             }
         });
-        addCoin.setOnClickListener(new View.OnClickListener() {//player increases bet by 1
-            @Override
-            public void onClick(View v) {
-                bet++;
-                coin--;
-                dispMoney();
-            }
-        });
     }
-    public void checkWinning(){//checks result of spin to see if player won anything
-        int matches =0;
-        for (int num:dispNum){//checks to see how many times 2 appears in all slots
-            if(num==2){
-                matches++;
-            }
-        }
-        if(matches==3){//triple
-            coin+=(bet*10);//player gets 10* original bet
-            Toast.makeText(getBaseContext(),"TRIPLE",Toast.LENGTH_LONG).show();
-        }
-        else if(matches==2){//double
-            coin+=(bet*4);
-            Toast.makeText(getBaseContext(),"DOUBLE",Toast.LENGTH_LONG).show();
-        }
-        else if(matches==1 && (dispNum[0]==2 ||dispNum[2]==2)){//single
-            coin+=(bet*2);
-            Toast.makeText(getBaseContext(),"SINGLE",Toast.LENGTH_LONG).show();
-        }
-        else{//nothing
-            Toast.makeText(getBaseContext(),"NILL",Toast.LENGTH_LONG).show();
-        }
-        bet=0;
-        dispMoney();
-    }
-    public void dispMoney(){//displays players bet and the total coins they have
-        TextView numCoin = findViewById(R.id.numCoin);
-        TextView totalCoin = findViewById(R.id.totalCoin);
-        numCoin.setText("BET: " +bet);
-        totalCoin.setText("TOTAL: "+coin);
-    }
+}
