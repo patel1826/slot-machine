@@ -183,6 +183,14 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtras(bundle);//sends bundle to mini game class
         startActivity(intent);//opens/starts minigame class
     }
+    public void openThreeByThree(){//opens new activity
+        Intent intent = new Intent(this, ThreeByThree.class);//goes from this class, to minigame class
+        Bundle bundle = new Bundle();//passes along data to new activity
+        bundle.putInt("coin",coin);//total money(coin) is connected to key word "coin" which will help identify what the number is
+        bundle.putInt("earn",0);
+        intent.putExtras(bundle);//sends bundle to mini game class
+        startActivity(intent);//opens/starts minigame class
+    }
 
 }
 
@@ -303,3 +311,217 @@ public class MiniGame extends AppCompatActivity {
     }
 }
 
+// THREE BY THREE
+
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.os.Handler;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Button;
+import android.widget.Toast;
+import android.content.Intent;
+
+//import org.w3c.dom.Text;
+
+import java.util.ArrayList;
+import java.util.Timer;
+
+public class ThreeByThree extends AppCompatActivity {
+
+    private ArrayList<Integer> slotImg = new ArrayList<Integer>();
+    private ArrayList<Integer> s1 = new ArrayList<Integer>();
+    private ArrayList<Integer> s2 = new ArrayList<Integer>();
+    private ArrayList<Integer> s3 = new ArrayList<Integer>();
+    private int gameCt =0;
+    private int bet =0;
+    private int coin =100;
+    private int coinsEarned;
+    //private Integer[] numPlacement[0] = new Integer[3];//numPlacement[0] will hold the final #'s after slot machine runs
+    private Integer[][] numPlacement= new Integer[3][3];//2d array for the 3x3 spinning numbers
+    Handler timerHandler = new Handler();
+    //sends runnables to a queue and executes them (each runnable creates a spinning slot)
+    long startTime =0;
+    Runnable s1Runnable = new Runnable() {
+        @Override
+        public void run() {
+            //displays images in short->longer time intervals in image view (looks like spinning)
+            ImageView slot1 = findViewById(R.id.slot1);
+            ImageView slot4 = findViewById(R.id.slot4);
+            ImageView slot7 = findViewById(R.id.slot7);
+            numPlacement[0][0]=s1.get((int) (Math.random() * s1.size()));
+            numPlacement[1][0]=s1.get((int) (Math.random() * s1.size()));
+            numPlacement[2][0]=s1.get((int) (Math.random() * s1.size()));
+            slot1.setImageResource(slotImg.get(numPlacement[0][0]));//displays random image
+            slot4.setImageResource(slotImg.get(numPlacement[1][0]));//displays random image
+            slot7.setImageResource(slotImg.get(numPlacement[2][0]));//displays random image
+            int milisec = (int)((System.currentTimeMillis()-startTime));
+            //amt of time passed btwn spinning start-now ^
+            if (milisec>=500){//after certain amt of time spinning stops
+                timerHandler.removeCallbacks(this);
+            }
+            else if(((System.currentTimeMillis()-startTime))>=100){
+                //as time passes, the delay btwn runnable calls increases
+                timerHandler.postDelayed(this,(25*(milisec/100)));
+            }
+            else{
+                timerHandler.postDelayed(this,25);
+                //adds runnable to queue again, to show series of imgs quickly
+            }
+        }
+    };
+    Runnable s2Runnable = new Runnable() {
+        @Override
+        public void run() {
+            ImageView slot2 = findViewById(R.id.slot2);
+            ImageView slot5 = findViewById(R.id.slot5);
+            ImageView slot8 = findViewById(R.id.slot8);
+            numPlacement[0][1]=s2.get((int) (Math.random() * s1.size()));
+            numPlacement[1][1]=s2.get((int) (Math.random() * s1.size()));
+            numPlacement[2][1]=s2.get((int) (Math.random() * s1.size()));
+            slot2.setImageResource(slotImg.get(numPlacement[0][1]));//displays random image
+            slot5.setImageResource(slotImg.get(numPlacement[1][1]));//displays random image
+            slot8.setImageResource(slotImg.get(numPlacement[2][1]));//displays random image
+            int milisec = (int)((System.currentTimeMillis()-startTime));
+            if (milisec>=1500){
+                timerHandler.removeCallbacks(this);
+            }
+            else if(((System.currentTimeMillis()-startTime))>=250){
+                timerHandler.postDelayed(this,(40*(milisec/250)));
+            }
+            else{
+                timerHandler.postDelayed(this,25);
+            }
+        }
+    };
+    Runnable s3Runnable = new Runnable() {
+        @Override
+        public void run() {
+            ImageView slot3 = findViewById(R.id.slot3);
+            ImageView slot6 = findViewById(R.id.slot6);
+            ImageView slot9 = findViewById(R.id.slot9);
+            numPlacement[0][2]=s3.get((int) (Math.random() * s3.size()));
+            numPlacement[1][2]=s3.get((int) (Math.random() * s3.size()));
+            numPlacement[2][2]=s3.get((int) (Math.random() * s3.size()));
+            slot3.setImageResource(slotImg.get(numPlacement[0][2]));//displays random image
+            slot6.setImageResource(slotImg.get(numPlacement[1][2]));//displays random image
+            slot9.setImageResource(slotImg.get(numPlacement[2][2]));//displays random image
+            int milisec = (int)((System.currentTimeMillis()-startTime));
+            if (milisec>=2000){
+                 checkWinning();//checks to see if player won anything
+                timerHandler.removeCallbacks(this);
+//                if(gameCt%5==0){//calls minigame to run every 5 games
+                    openMain();
+//                }
+            }
+            else if(((System.currentTimeMillis()-startTime))>=500){
+                timerHandler.postDelayed(this,(60*(milisec/500)));
+            }
+            else{
+                timerHandler.postDelayed(this,25);
+            }
+        }
+    };
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_three_by_three);
+        final Button spin = findViewById(R.id.spinBtn);
+        final Button addCoin = findViewById(R.id.addCoin);
+        for (int i=0;i<6;i++){//fills possible outcomes of spin to array (0-6)
+            s1.add(i);
+            s2.add(i);
+            s3.add(i);
+        }
+        slotImg.add(R.drawable.zero);
+        slotImg.add(R.drawable.one);
+        slotImg.add(R.drawable.two);
+        slotImg.add(R.drawable.three);
+        slotImg.add(R.drawable.four);
+        slotImg.add(R.drawable.five);
+        // slotImg.add(R.drawable.six);
+        spin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {//displays random images in imgviews(slots) to make it seem like its spinning
+                if (bet>0){
+                    gameCt++;
+                    startTime = System.currentTimeMillis();
+                    timerHandler.postDelayed(s1Runnable,0);//tells handlers to add runnables to queue and run them
+                    timerHandler.postDelayed(s2Runnable,0);
+                    timerHandler.postDelayed(s3Runnable,0);
+//                    timerHandler.postDelayed(s4Runnable,0);//tells handlers to add runnables to queue and run them
+//                    timerHandler.postDelayed(s5Runnable,0);
+//                    timerHandler.postDelayed(s6Runnable,0);
+//                    timerHandler.postDelayed(s7Runnable,0);//tells handlers to add runnables to queue and run them
+//                    timerHandler.postDelayed(s8Runnable,0);
+//                    timerHandler.postDelayed(s9Runnable,0);
+                }
+//                Toast.makeText(getBaseContext(),"hiii",Toast.LENGTH_LONG).show();
+
+            }
+        });
+        addCoin.setOnClickListener(new View.OnClickListener() {//player increases bet by 1
+            @Override
+            public void onClick(View v) {
+                bet++;
+                coin--;
+                dispMoney();
+            }
+        });
+        Intent intent2=getIntent();//when minigame runs and then reopens this activity, all numbers reset to original values(ex, player money count)
+        Bundle bundle = intent2.getExtras();//minigame passes along data in a bundle
+        if(bundle!=null){//checks in case the bundle sent is empty
+            coin = bundle.getInt("coin");//the int value for the total coins a player has, comes with a string key to identify it
+            coinsEarned= bundle.getInt("earn");
+        }
+//        coin+=intent2.getIntExtra(MiniGame.EXTRA_INT, 0);
+        dispMoney();//disps new money
+    }
+    public void checkWinning(){//checks result of spin to see if player won anything
+        int totalNum=0;
+        for (int i=0; i<3;i++)
+        {
+            //goes through each row
+            for (int x=0;x<3;x++) {
+                //Toast.makeText(getBaseContext(),"num"+numPlacement[i][x],Toast.LENGTH_LONG).show();
+                if (numPlacement[i][x]==2)
+                {
+                    totalNum++;
+                }
+                //totalNum+=x;
+                //goes through each collumn
+//                if (x == chosenNum) {
+//                    //if the number is found, then adds a one to the new array(numFound) at the same position, if not, adds a a zero
+//                    numFound[i][x]=1;
+//                    numsFound++;
+//
+//
+//                }
+//                else
+//                {
+//                    numFound[i][x]=0;
+//                }
+
+            }
+        }
+        coin+=bet*totalNum;
+        Toast.makeText(getBaseContext(),"totalnum"+totalNum,Toast.LENGTH_LONG).show();
+        dispMoney();
+    }
+    public void dispMoney(){//displays players bet and the total coins they have
+        TextView numCoin = findViewById(R.id.numCoin);
+        TextView totalCoin = findViewById(R.id.totalCoin);
+        numCoin.setText("BET:" +bet);
+        totalCoin.setText("TOTAL:"+coin);
+    }
+    public void openMain(){//opens new activity
+        Intent intent = new Intent(this, MainActivity.class);//goes from this class, to minigame class
+        Bundle bundle = new Bundle();//passes along data to new activity
+        bundle.putInt("coin",coin);//total money(coin) is connected to key word "coin" which will help identify what the number is
+        bundle.putInt("earn",0);
+        intent.putExtras(bundle);//sends bundle to mini game class
+        startActivity(intent);//opens/starts minigame class
+    }
+}
