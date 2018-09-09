@@ -1,527 +1,303 @@
-# slot-machine
-//MainActivity
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.os.Handler;
-import android.view.View;
-import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Button;
-import android.widget.Toast;
-import android.content.Intent;
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ThreeByThree"
+    android:background="@drawable/slotmachinebackground">
 
-//import org.w3c.dom.Text;
+    <ImageView
+        android:id="@+id/slot3"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.8"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.251"
+         />
 
-import java.util.ArrayList;
-import java.util.Timer;
+    <ImageView
+        android:id="@+id/slot1"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.2"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.251" />
 
-public class MainActivity extends AppCompatActivity {
-   // public static final String EXTRA_NUM="com.example.mpate.intro.EXTRA_NUM";
-    private ArrayList<Integer> slotImg = new ArrayList<Integer>();
-    private ArrayList<Integer> s1 = new ArrayList<Integer>();
-    private ArrayList<Integer> s2 = new ArrayList<Integer>();
-    private ArrayList<Integer> s3 = new ArrayList<Integer>();
-    private int gameCt =0;
-    private int bet =0;
-    private int coin =100;
-    private int coinsEarned;
-    private Integer[] dispNum = new Integer[3];//dispNum will hold the final #'s after slot machine runs
-     Handler timerHandler = new Handler();
-     //sends runnables to a queue and executes them (each runnable creates a spinning slot)
-     long startTime =0;
-          Runnable s1Runnable = new Runnable() {
-            @Override
-            public void run() {
-                //displays images in short->longer time intervals in image view (looks like spinning)
-                ImageView slot1 = findViewById(R.id.slot1);
-                dispNum[0]=s1.get((int) (Math.random() * s1.size()));
-                slot1.setImageResource(slotImg.get(dispNum[0]));//displays random image
-                int milisec = (int)((System.currentTimeMillis()-startTime));
-                //amt of time passed btwn spinning start-now ^
-                if (milisec>=500){//after certain amt of time spinning stops
-                    timerHandler.removeCallbacks(this);
-                }
-                else if(((System.currentTimeMillis()-startTime))>=100){
-                    //as time passes, the delay btwn runnable calls increases
-                    timerHandler.postDelayed(this,(25*(milisec/100)));
-                }
-                else{
-                    timerHandler.postDelayed(this,25);
-                    //adds runnable to queue again, to show series of imgs quickly
-                }
-            }
-        };
-        Runnable s2Runnable = new Runnable() {
-            @Override
-            public void run() {
-                ImageView slot2 = findViewById(R.id.slot2);
-                dispNum[1]=s2.get((int) (Math.random() * s2.size()));
-                slot2.setImageResource(slotImg.get(dispNum[1]));
-                int milisec = (int)((System.currentTimeMillis()-startTime));
-                if (milisec>=1500){
-                    timerHandler.removeCallbacks(this);
-                }
-                else if(((System.currentTimeMillis()-startTime))>=250){
-                    timerHandler.postDelayed(this,(40*(milisec/250)));
-                }
-                else{
-                    timerHandler.postDelayed(this,25);
-                }
-            }
-        };
-        Runnable s3Runnable = new Runnable() {
-            @Override
-            public void run() {
-                ImageView slot3 = findViewById(R.id.slot3);
-                dispNum[2]=s3.get((int) (Math.random() * s3.size()));
-                slot3.setImageResource(slotImg.get(dispNum[2]));
-                int milisec = (int)((System.currentTimeMillis()-startTime));
-                if (milisec>=2000){
-                    checkWinning();//checks to see if player won anything
-                    timerHandler.removeCallbacks(this);
-                    if(gameCt%5==0){//calls minigame to run every 5 games
-                       openMiniGame();
-                    }
-                }
-                else if(((System.currentTimeMillis()-startTime))>=500){
-                    timerHandler.postDelayed(this,(60*(milisec/500)));
-                }
-                else{
-                    timerHandler.postDelayed(this,25);
-                }
-            }
-        };
+    <ImageView
+        android:id="@+id/slot2"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.251" />
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        final Button spin = findViewById(R.id.spinBtn);
-        final Button addCoin = findViewById(R.id.addCoin);
-        for (int i=0;i<6;i++){//fills possible outcomes of spin to array (0-6)
-            s1.add(i);
-            s2.add(i);
-            s3.add(i);
-        }
-        slotImg.add(R.drawable.zero);
-        slotImg.add(R.drawable.one);
-        slotImg.add(R.drawable.two);
-        slotImg.add(R.drawable.three);
-        slotImg.add(R.drawable.four);
-        slotImg.add(R.drawable.five);
-       // slotImg.add(R.drawable.six);
-        spin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {//displays random images in imgviews(slots) to make it seem like its spinning
-                 if (bet>0){
-                    gameCt++;
-                    startTime = System.currentTimeMillis();
-                    timerHandler.postDelayed(s1Runnable,0);//tells handlers to add runnables to queue and run them
-                    timerHandler.postDelayed(s2Runnable,0);
-                    timerHandler.postDelayed(s3Runnable,0);
-                }
-//                Toast.makeText(getBaseContext(),"hiii",Toast.LENGTH_LONG).show();
+    <ImageView
+        android:id="@+id/slot4"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.2"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.49" />
 
-            }
-        });
-        addCoin.setOnClickListener(new View.OnClickListener() {//player increases bet by 1
-            @Override
-            public void onClick(View v) {
-                bet++;
-                coin--;
-                dispMoney();
-            }
-        });
-           Intent intent2=getIntent();//when minigame runs and then reopens this activity, all numbers reset to original values(ex, player money count)
-           Bundle bundle = intent2.getExtras();//minigame passes along data in a bundle
-           if(bundle!=null){//checks in case the bundle sent is empty
-               coin = bundle.getInt("coin");//the int value for the total coins a player has, comes with a string key to identify it
-               coinsEarned= bundle.getInt("earn");
-           }
-//        coin+=intent2.getIntExtra(MiniGame.EXTRA_INT, 0);
-        dispMoney();//disps new money
-    }
-    public void checkWinning(){//checks result of spin to see if player won anything
-        int matches =0;
-        for (int num:dispNum){//checks to see how many times 2 appears in all slots
-            if(num==2){
-                matches++;
-            }
-        }
-        if(matches==3){//triple
-            coinsEarned+=(bet*10);
-            coin+=(bet*10);//player gets 10* original bet
-            Toast.makeText(getBaseContext(),"TRIPLE",Toast.LENGTH_LONG).show();
-        }
-        else if(matches==2){//double
-            coinsEarned+=(bet*4);
-            coin+=(bet*4);
-            Toast.makeText(getBaseContext(),"DOUBLE",Toast.LENGTH_LONG).show();
-        }
-        else if(matches==1 && (dispNum[0]==2 ||dispNum[2]==2)){//single
-            coinsEarned+=(bet*2);
-            coin+=(bet*2);
-            Toast.makeText(getBaseContext(),"SINGLE",Toast.LENGTH_LONG).show();
-        }
-        else{//nothing
-            Toast.makeText(getBaseContext(),"NILL",Toast.LENGTH_LONG).show();
-        }
-        bet=0;
-        dispMoney();
-    }
-    public void dispMoney(){//displays players bet and the total coins they have
-        TextView numCoin = findViewById(R.id.numCoin);
-        TextView totalCoin = findViewById(R.id.totalCoin);
-        numCoin.setText("BET:" +bet);
-        totalCoin.setText("TOTAL:"+coin);
-    }
-    public void openMiniGame(){//opens new activity
-        Intent intent = new Intent(this, MiniGame.class);//goes from this class, to minigame class
-        Bundle bundle = new Bundle();//passes along data to new activity
-        bundle.putInt("coin",coin);//total money(coin) is connected to key word "coin" which will help identify what the number is
-        bundle.putInt("earn",coinsEarned);
-        intent.putExtras(bundle);//sends bundle to mini game class
-        startActivity(intent);//opens/starts minigame class
-    }
-    public void openThreeByThree(){//opens new activity
-        Intent intent = new Intent(this, ThreeByThree.class);//goes from this class, to minigame class
-        Bundle bundle = new Bundle();//passes along data to new activity
-        bundle.putInt("coin",coin);//total money(coin) is connected to key word "coin" which will help identify what the number is
-        bundle.putInt("earn",0);
-        intent.putExtras(bundle);//sends bundle to mini game class
-        startActivity(intent);//opens/starts minigame class
-    }
+    <ImageView
+        android:id="@+id/slot6"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.8"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.49"
+         />
 
-}
+    <ImageView
+        android:id="@+id/slot5"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.49"
+         />
 
-//MINI GAME (SEPARATE CLASS)
+    <ImageView
+        android:id="@+id/slot7"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.2"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.73"
+         />
 
-import android.content.Intent;
-import android.os.CountDownTimer;
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.os.Handler;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toast;
+    <ImageView
+        android:id="@+id/slot9"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.8"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.73"
+         />
 
-import java.util.ArrayList;
+    <ImageView
+        android:id="@+id/slot8"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.73"
+         />
+    <Button
+        android:id="@+id/spinBtn"
+        android:layout_width="107dp"
+        android:layout_height="53dp"
+        android:fontFamily="sans-serif-condensed"
+        android:text="Spin"
+        android:textAlignment="center"
+        android:textSize="30sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.49"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.024" />
 
-public class MiniGame extends AppCompatActivity {
-    private ArrayList<Integer> slotImg = new ArrayList<Integer>();
-    public static final String EXTRA_INT="com.example.mpate.intro.EXTRA_INT";
-    private ArrayList<Integer> s2 = new ArrayList<Integer>();
-    private long start =0;
-    private Handler timer = new Handler();
-    private String userGuess;
-    private int prize=0;
-    private int dispNum;
-    private int count =0;
-    private int coin=0;
-    private int coinEarned=0;
-    Runnable s2Runnable = new Runnable() {
-        @Override
-        public void run() {
-            //displays images in short->longer time intervals in image view (looks like spinning)
-            ImageView slot2 = findViewById(R.id.slotImg2);
-            int dispNum =s2.get((int) (Math.random() * s2.size()));
-            slot2.setImageResource(slotImg.get(dispNum));//displays random image
-            int milisec = (int)((System.currentTimeMillis()-start));
-            //amt of time passed btwn spinning start-now ^
-            if (milisec>=1500){//after certain amt of time spinning stops
-                checkWin();
-                timer.removeCallbacks(this);
-            }
-            else if(((System.currentTimeMillis()-start))>=250){
-                //as time passes, the delay btwn runnable calls increases
-                timer.postDelayed(this,(40*(milisec/250)));
-            }
-            else{
-                timer.postDelayed(this,25);
-                //adds runnable to queue again, to show series of imgs quickly
-            }
-        }
-    };
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_mini_game);
-        final Button spin = findViewById(R.id.spin);
-        for (int i=0;i<6;i++){//fills possible outcomes of spin to array (0-6)
-            s2.add(i);
-        }
-        slotImg.add(R.drawable.zero);
-        slotImg.add(R.drawable.one);
-        slotImg.add(R.drawable.two);
-        slotImg.add(R.drawable.three);
-        slotImg.add(R.drawable.four);
-        slotImg.add(R.drawable.five);
-        Intent intent2=getIntent();
-        //grabs int values sent from mainactivity such as total money and total money earned as both were stored in a data bundle
-        Bundle bundle = intent2.getExtras();
-        coin = bundle.getInt("coin");
-        coinEarned = bundle.getInt("earn");
-        spin.setOnClickListener(new View.OnClickListener(){
-            public void onClick(View v){//on button click, one slot will start spinning
-                EditText guess = findViewById(R.id.enterGuess);
-                 userGuess = guess.getText().toString();
-                if (userGuess.compareTo("/")>0&&userGuess.compareTo("6")<0){//slot will spin if user guessed a number from (0-6)
-                    start = System.currentTimeMillis();
-                    timer.postDelayed(s2Runnable,0);//runs a runnable which displays images to simulate spinning
-                }
-            }
-        });
-    }
-    public void checkWin(){//checks if player won, and displays it for 2 seconds
-        new CountDownTimer(2000,100) {//timer runs for 2 secs, with 100 milisecond intervals
-            @Override
-            public void onTick(long millisUntilFinished) {
-                count++;//keeps track of how many 100 milisecond intervals have passed
-                TextView dispWin = findViewById(R.id.winTxt);
-                if(count%2==0){//flashes the text "you win/lose" by displaying nothing during odd count intervals, and the text during even count intervals
-                    if(Integer.parseInt(userGuess)==dispNum){//if user guess = the number displayed
-                        prize=50;
-                        dispWin.setText("YOU WIN");
-                    }
-                    else{
-                        dispWin.setText("YOU LOSE");
-                    }
-                }
-                else{
-                    dispWin.setText("");
-                }
-            }
-            @Override
-            public void onFinish() {//when countdown timer finishes, main activity is opened again
-                coin+=prize;
-                coinEarned+=prize;
-                Intent intent =new Intent(MiniGame.this, MainActivity.class);
-                Bundle bundle = new Bundle();
-                bundle.putInt("coin",coin);
-                bundle.putInt("earned",5);
-                intent.putExtras(bundle);
-               // intent.putExtra(EXTRA_INT, prize);
-                startActivity(intent);
-            }
 
-        }.start();
-    }
-}
+    <TextView
+        android:id="@+id/totalCoin"
+        android:layout_width="135dp"
+        android:layout_height="35dp"
+        android:fontFamily="sans-serif-condensed"
+        android:text="TOTAL:100"
+        android:textAlignment="viewStart"
+        android:textColor="@android:color/black"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.98"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.97" />
 
-// THREE BY THREE
+    <TextView
+        android:id="@+id/numCoin"
+        android:layout_width="123dp"
+        android:layout_height="37dp"
+        android:fontFamily="sans-serif-condensed"
+        android:text="BET:0"
+        android:textAlignment="viewStart"
+        android:textColor="@android:color/black"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.134"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.988" />
 
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.os.Handler;
-import android.view.View;
-import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Button;
-import android.widget.Toast;
-import android.content.Intent;
+    <Button
+        android:id="@+id/addCoin"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:background="@android:drawable/ic_input_add"
+        android:backgroundTint="@android:color/black"
+        android:fontFamily="monospace"
+        android:textColor="?android:attr/colorPressedHighlight"
+        android:textSize="30sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.01"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
 
-//import org.w3c.dom.Text;
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="224dp"
+        android:layout_height="52dp"
+        android:fontFamily="sans-serif-condensed"
+        android:text="SPIN 2 WIN"
+        android:textAlignment="center"
+        android:textColor="@android:color/black"
+        android:textSize="40sp"
+        android:textStyle="bold"
+        android:typeface="monospace"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
 
-import java.util.ArrayList;
-import java.util.Timer;
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="205dp"
+        android:layout_height="42dp"
+        android:fontFamily="sans-serif-condensed"
+        android:text="SPIN 2 WIN"
+        android:textAlignment="center"
+        android:textColor="@android:color/black"
+        android:textSize="40sp"
+        android:textStyle="bold"
+        android:typeface="monospace"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.012"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.019" />
 
-public class ThreeByThree extends AppCompatActivity {
+    <Button
+        android:id="@+id/add"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="+"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.024"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
 
-    private ArrayList<Integer> slotImg = new ArrayList<Integer>();
-    private ArrayList<Integer> s1 = new ArrayList<Integer>();
-    private ArrayList<Integer> s2 = new ArrayList<Integer>();
-    private ArrayList<Integer> s3 = new ArrayList<Integer>();
-    private int gameCt =0;
-    private int bet =0;
-    private int coin =100;
-    private int coinsEarned;
-    //private Integer[] numPlacement[0] = new Integer[3];//numPlacement[0] will hold the final #'s after slot machine runs
-    private Integer[][] numPlacement= new Integer[3][3];//2d array for the 3x3 spinning numbers
-    Handler timerHandler = new Handler();
-    //sends runnables to a queue and executes them (each runnable creates a spinning slot)
-    long startTime =0;
-    Runnable s1Runnable = new Runnable() {
-        @Override
-        public void run() {
-            //displays images in short->longer time intervals in image view (looks like spinning)
-            ImageView slot1 = findViewById(R.id.slot1);
-            ImageView slot4 = findViewById(R.id.slot4);
-            ImageView slot7 = findViewById(R.id.slot7);
-            numPlacement[0][0]=s1.get((int) (Math.random() * s1.size()));
-            numPlacement[1][0]=s1.get((int) (Math.random() * s1.size()));
-            numPlacement[2][0]=s1.get((int) (Math.random() * s1.size()));
-            slot1.setImageResource(slotImg.get(numPlacement[0][0]));//displays random image
-            slot4.setImageResource(slotImg.get(numPlacement[1][0]));//displays random image
-            slot7.setImageResource(slotImg.get(numPlacement[2][0]));//displays random image
-            int milisec = (int)((System.currentTimeMillis()-startTime));
-            //amt of time passed btwn spinning start-now ^
-            if (milisec>=500){//after certain amt of time spinning stops
-                timerHandler.removeCallbacks(this);
-            }
-            else if(((System.currentTimeMillis()-startTime))>=100){
-                //as time passes, the delay btwn runnable calls increases
-                timerHandler.postDelayed(this,(25*(milisec/100)));
-            }
-            else{
-                timerHandler.postDelayed(this,25);
-                //adds runnable to queue again, to show series of imgs quickly
-            }
-        }
-    };
-    Runnable s2Runnable = new Runnable() {
-        @Override
-        public void run() {
-            ImageView slot2 = findViewById(R.id.slot2);
-            ImageView slot5 = findViewById(R.id.slot5);
-            ImageView slot8 = findViewById(R.id.slot8);
-            numPlacement[0][1]=s2.get((int) (Math.random() * s1.size()));
-            numPlacement[1][1]=s2.get((int) (Math.random() * s1.size()));
-            numPlacement[2][1]=s2.get((int) (Math.random() * s1.size()));
-            slot2.setImageResource(slotImg.get(numPlacement[0][1]));//displays random image
-            slot5.setImageResource(slotImg.get(numPlacement[1][1]));//displays random image
-            slot8.setImageResource(slotImg.get(numPlacement[2][1]));//displays random image
-            int milisec = (int)((System.currentTimeMillis()-startTime));
-            if (milisec>=1500){
-                timerHandler.removeCallbacks(this);
-            }
-            else if(((System.currentTimeMillis()-startTime))>=250){
-                timerHandler.postDelayed(this,(40*(milisec/250)));
-            }
-            else{
-                timerHandler.postDelayed(this,25);
-            }
-        }
-    };
-    Runnable s3Runnable = new Runnable() {
-        @Override
-        public void run() {
-            ImageView slot3 = findViewById(R.id.slot3);
-            ImageView slot6 = findViewById(R.id.slot6);
-            ImageView slot9 = findViewById(R.id.slot9);
-            numPlacement[0][2]=s3.get((int) (Math.random() * s3.size()));
-            numPlacement[1][2]=s3.get((int) (Math.random() * s3.size()));
-            numPlacement[2][2]=s3.get((int) (Math.random() * s3.size()));
-            slot3.setImageResource(slotImg.get(numPlacement[0][2]));//displays random image
-            slot6.setImageResource(slotImg.get(numPlacement[1][2]));//displays random image
-            slot9.setImageResource(slotImg.get(numPlacement[2][2]));//displays random image
-            int milisec = (int)((System.currentTimeMillis()-startTime));
-            if (milisec>=2000){
-                 checkWinning();//checks to see if player won anything
-                timerHandler.removeCallbacks(this);
-//                if(gameCt%5==0){//calls minigame to run every 5 games
-                    openMain();
-//                }
-            }
-            else if(((System.currentTimeMillis()-startTime))>=500){
-                timerHandler.postDelayed(this,(60*(milisec/500)));
-            }
-            else{
-                timerHandler.postDelayed(this,25);
-            }
-        }
-    };
+    <Button
+        android:id="@+id/subtract"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="-"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.233"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_three_by_three);
-        final Button spin = findViewById(R.id.spinBtn);
-        final Button addCoin = findViewById(R.id.addCoin);
-        for (int i=0;i<6;i++){//fills possible outcomes of spin to array (0-6)
-            s1.add(i);
-            s2.add(i);
-            s3.add(i);
-        }
-        slotImg.add(R.drawable.zero);
-        slotImg.add(R.drawable.one);
-        slotImg.add(R.drawable.two);
-        slotImg.add(R.drawable.three);
-        slotImg.add(R.drawable.four);
-        slotImg.add(R.drawable.five);
-        // slotImg.add(R.drawable.six);
-        spin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {//displays random images in imgviews(slots) to make it seem like its spinning
-                if (bet>0){
-                    gameCt++;
-                    startTime = System.currentTimeMillis();
-                    timerHandler.postDelayed(s1Runnable,0);//tells handlers to add runnables to queue and run them
-                    timerHandler.postDelayed(s2Runnable,0);
-                    timerHandler.postDelayed(s3Runnable,0);
-//                    timerHandler.postDelayed(s4Runnable,0);//tells handlers to add runnables to queue and run them
-//                    timerHandler.postDelayed(s5Runnable,0);
-//                    timerHandler.postDelayed(s6Runnable,0);
-//                    timerHandler.postDelayed(s7Runnable,0);//tells handlers to add runnables to queue and run them
-//                    timerHandler.postDelayed(s8Runnable,0);
-//                    timerHandler.postDelayed(s9Runnable,0);
-                }
-//                Toast.makeText(getBaseContext(),"hiii",Toast.LENGTH_LONG).show();
+    <Button
+        android:id="@+id/multiply"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="*"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.734"
+        app:layout_constraintStart_toStartOf="@+id/textView4"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
 
-            }
-        });
-        addCoin.setOnClickListener(new View.OnClickListener() {//player increases bet by 1
-            @Override
-            public void onClick(View v) {
-                bet++;
-                coin--;
-                dispMoney();
-            }
-        });
-        Intent intent2=getIntent();//when minigame runs and then reopens this activity, all numbers reset to original values(ex, player money count)
-        Bundle bundle = intent2.getExtras();//minigame passes along data in a bundle
-        if(bundle!=null){//checks in case the bundle sent is empty
-            coin = bundle.getInt("coin");//the int value for the total coins a player has, comes with a string key to identify it
-            coinsEarned= bundle.getInt("earn");
-        }
-//        coin+=intent2.getIntExtra(MiniGame.EXTRA_INT, 0);
-        dispMoney();//disps new money
-    }
-    public void checkWinning(){//checks result of spin to see if player won anything
-        int totalNum=0;
-        for (int i=0; i<3;i++)
-        {
-            //goes through each row
-            for (int x=0;x<3;x++) {
-                //Toast.makeText(getBaseContext(),"num"+numPlacement[i][x],Toast.LENGTH_LONG).show();
-                if (numPlacement[i][x]==2)
-                {
-                    totalNum++;
-                }
-                //totalNum+=x;
-                //goes through each collumn
-//                if (x == chosenNum) {
-//                    //if the number is found, then adds a one to the new array(numFound) at the same position, if not, adds a a zero
-//                    numFound[i][x]=1;
-//                    numsFound++;
-//
-//
-//                }
-//                else
-//                {
-//                    numFound[i][x]=0;
-//                }
+    <Button
+        android:id="@+id/divide"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="/"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="@+id/totalCoin"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.983"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
 
-            }
-        }
-        coin+=bet*totalNum;
-        Toast.makeText(getBaseContext(),"totalnum"+totalNum,Toast.LENGTH_LONG).show();
-        dispMoney();
-    }
-    public void dispMoney(){//displays players bet and the total coins they have
-        TextView numCoin = findViewById(R.id.numCoin);
-        TextView totalCoin = findViewById(R.id.totalCoin);
-        numCoin.setText("BET:" +bet);
-        totalCoin.setText("TOTAL:"+coin);
-    }
-    public void openMain(){//opens new activity
-        Intent intent = new Intent(this, MainActivity.class);//goes from this class, to minigame class
-        Bundle bundle = new Bundle();//passes along data to new activity
-        bundle.putInt("coin",coin);//total money(coin) is connected to key word "coin" which will help identify what the number is
-        bundle.putInt("earn",0);
-        intent.putExtras(bundle);//sends bundle to mini game class
-        startActivity(intent);//opens/starts minigame class
-    }
-}
+    <TextView
+        android:id="@+id/showCalc"
+        android:layout_width="110dp"
+        android:layout_height="44dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:textStyle="bold"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.562"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/spinBtn"
+        app:layout_constraintVertical_bias="0.003" />
+
+</android.support.constraint.ConstraintLayout>
